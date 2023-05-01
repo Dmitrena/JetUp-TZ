@@ -1,5 +1,7 @@
 const Pool = require('pg').Pool;
-require('dotenv').config();
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const pool = new Pool({
   user: process.env.POSTGRES_USER,
