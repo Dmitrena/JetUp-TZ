@@ -54,23 +54,25 @@ async function saveEmployees(employees: IEmployee[]): Promise<void> {
   await saveEmployees(employees);
 })();
 
-// Rout to get a list of employees with the ability to filter by search string.
+// Route to get a list of employees with the ability to filter by search string.
 app.get('/employees', async (req: Request, res: Response) => {
   const searchTerm: string | undefined = req.query.searchTerm?.toString();
   let employees: IEmployeeRow[] = [];
 
   try {
-    const result = await pool.query('SELECT * FROM employee');
+    let query = 'SELECT * FROM employee';
+
+    if (searchTerm) {
+      query += ` WHERE first_name LIKE '%${searchTerm}%' OR position LIKE '%${searchTerm}%' OR description LIKE '%${searchTerm}%'`;
+    } else {
+      query += ' WHERE 1=1';
+    }
+
+    const result = await pool.query(query);
     employees = result.rows;
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Internal server error' });
-  }
-
-  if (searchTerm) {
-    employees = employees.filter((employee: IEmployeeRow) =>
-      employee.first_name.includes(searchTerm)
-    );
   }
 
   res.json(employees);
