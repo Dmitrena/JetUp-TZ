@@ -36,11 +36,19 @@ async function saveEmployees(employees: IEmployee[]): Promise<void> {
   for (const employee of employees) {
     const { firstName, position, description } = employee;
     try {
-      await pool.query(
-        'INSERT INTO employee (first_name, position, description) VALUES ($1, $2, $3)',
+      const existingEmployee = await pool.query(
+        'SELECT * FROM employee WHERE first_name = $1 AND position = $2 AND description = $3',
         [firstName, position, description]
       );
-      console.log('Data inserted successfully');
+      if (existingEmployee.rowCount === 0) {
+        await pool.query(
+          'INSERT INTO employee (first_name, position, description) VALUES ($1, $2, $3)',
+          [firstName, position, description]
+        );
+        console.log('Data inserted successfully');
+      } else {
+        console.log('Employee already exists');
+      }
     } catch (error) {
       console.error(error);
     }
